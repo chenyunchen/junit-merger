@@ -7,10 +7,10 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"os"
+	"path/filepath"
 	"strconv"
 )
-
-//todo: directory support
 
 //JUnitReport represents either a single test suite or a collection of test suites
 type JUnitReport struct {
@@ -43,34 +43,26 @@ func main() {
 	}
 
 	var mergedReport JUnitReport
-	startedReading := false
 	fileCount := 0
 
 	for _, fileName := range files {
 		var report JUnitReport
 		in, err := ioutil.ReadFile(fileName)
-
 		if err != nil {
 			panic(err)
 		}
 
 		err = xml.Unmarshal(in, &report)
-
 		if err != nil {
 			panic(err)
 		}
 
-		if report.XMLName.Local == "testsuite" {
-			panic(errors.New("Reports with a root <testsuite> are not supported"))
+		if report.XMLName.Local == "testsuites" {
+			panic(errors.New("Reports with a root <testsuites> are not supported"))
 		}
 
-		if startedReading && report.Name != mergedReport.Name {
-			panic(errors.New("All reports must have the same <testsuites> name"))
-		}
-
-		startedReading = true
 		fileCount++
-		mergedReport.XMLName = xml.Name{Local: "testsuites"}
+		mergedReport.XMLName = xml.Name{Local: "testsuite"}
 		mergedReport.Name = report.Name
 		mergedReport.Time += report.Time
 		mergedReport.Tests += report.Tests
@@ -84,8 +76,9 @@ func main() {
 	if printReport {
 		fmt.Println(string(mergedOutput))
 	} else {
-		err := ioutil.WriteFile(*outputFileName, mergedOutput, 0644)
+		os.MkdirAll(filepath.Dir(*outputFileName), os.ModePerm)
 
+		err := ioutil.WriteFile(*outputFileName, mergedOutput, 0644)
 		if err != nil {
 			panic(err)
 		}

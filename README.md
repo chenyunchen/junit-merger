@@ -1,18 +1,16 @@
 # junit-merger
 
-`junit-merger` merges many JUnit reports into one report.
+`junit-merger` merges many JUnit reports into one report for Jenkins.
 
 ## Usage
 
 ```
-$ junit-merger *.xml > merged.xml
 $ junit-merger -o merged.xml a.xml b.xml c.xml
 ```
 
 ## Installation
 
-* Download binaries from <https://github.com/imsky/junit-merger/releases>
-* `go get github.com/imsky/junit-merger/...`
+* `go get github.com/chenyunchen/junit-merger/...`
 
 ## License
 
