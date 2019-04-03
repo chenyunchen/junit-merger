@@ -3,13 +3,13 @@ package main
 import (
 	"bytes"
 	"encoding/xml"
-	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 )
 
 //JUnitReport represents either a single test suite or a collection of test suites
@@ -57,11 +57,26 @@ func main() {
 			panic(err)
 		}
 
+		fileCount++
+
 		if report.XMLName.Local == "testsuites" {
-			panic(errors.New("Reports with a root <testsuites> are not supported"))
+			testsuites := strings.Split(report.XML, "</testsuite>")
+			for _, testsuite := range testsuites[:len(testsuites)-1] {
+				testsuite += "</testsuite>"
+				err = xml.Unmarshal([]byte(testsuite), &report)
+				if err != nil {
+					panic(err)
+				}
+				mergedReport.XMLName = xml.Name{Local: "testsuite"}
+				mergedReport.Name = report.Name
+				mergedReport.Time += report.Time
+				mergedReport.Tests += report.Tests
+				mergedReport.Failures += report.Failures
+				mergedReport.XMLBuffer.WriteString(report.XML)
+			}
+			break
 		}
 
-		fileCount++
 		mergedReport.XMLName = xml.Name{Local: "testsuite"}
 		mergedReport.Name = report.Name
 		mergedReport.Time += report.Time
