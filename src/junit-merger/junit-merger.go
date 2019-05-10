@@ -74,7 +74,7 @@ func main() {
 				mergedReport.Failures += report.Failures
 				mergedReport.XMLBuffer.WriteString(report.XML)
 			}
-			break
+			continue
 		}
 
 		mergedReport.XMLName = xml.Name{Local: "testsuite"}
